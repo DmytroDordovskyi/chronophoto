@@ -1,0 +1,45 @@
+use clap::Parser;
+use photo_library::processor::process;
+use photo_library::types::Args;
+use std::path::PathBuf;
+
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct CliArgs {
+    source: PathBuf,
+    #[arg(short, long, default_value = "daily")]
+    mode: String,
+    #[arg(long)]
+    library: PathBuf,
+    #[arg(short = 'n', long, default_value_t = 25)]
+    limit: u16,
+    #[arg(short, long, default_value_t = false)]
+    rename: bool,
+    #[arg(long, default_value_t = false)]
+    dry_run: bool,
+}
+
+impl TryFrom<CliArgs> for Args {
+    type Error = String;
+
+    fn try_from(cli: CliArgs) -> Result<Self, Self::Error> {
+        Ok(Args {
+            source: cli.source,
+            mode: cli.mode.parse()?,
+            library: cli.library,
+            limit: cli.limit,
+            rename: cli.rename,
+            dry_run: cli.dry_run,
+        })
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = CliArgs::parse();
+    if !args.source.exists() {
+        eprintln!("Error: Source directory does not exist: {:?}", args.source);
+        std::process::exit(1);
+    }
+    process(args.try_into()?);
+    Ok(())
+}

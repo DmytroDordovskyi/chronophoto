@@ -1,0 +1,88 @@
+use crate::types::{Args, Mode, PhotoMetadata};
+use std::collections::HashMap;
+use std::path::PathBuf;
+
+type Err = String;
+
+pub fn calc_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
+    match args.mode {
+        Mode::Daily => metadata
+            .into_iter()
+            .map(|md| build_daily_path(&md, args.library.clone(), args.rename))
+            .collect(),
+        Mode::Monthly => metadata
+            .into_iter()
+            .map(|md| build_monthly_path(&md, args.library.clone(), args.rename))
+            .collect(),
+        Mode::Compact => build_compact_paths(metadata, args),
+    }
+}
+
+fn calc_stats(metadata: &[PhotoMetadata]) -> HashMap<String, u16> {
+    metadata.iter().fold(HashMap::new(), |mut acc, md| {
+        let key = stat_key(md);
+        match acc.get(&key) {
+            Some(v) => acc.insert(key, v + 1),
+            None => acc.insert(key, 1),
+        };
+        acc
+    })
+}
+
+fn stat_key(md: &PhotoMetadata) -> String {
+    format!("{}-{}", md.datetime.year, md.datetime.month)
+}
+
+fn build_compact_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
+    let stats = calc_stats(&metadata);
+    metadata
+        .into_iter()
+        .map(|md| {
+            let key = stat_key(&md);
+            if *stats.get(&key).unwrap() > args.limit {
+                build_daily_path(&md, args.library.clone(), args.rename)
+            } else {
+                build_monthly_path(&md, args.library.clone(), args.rename)
+            }
+        })
+        .collect()
+}
+
+fn build_daily_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (PathBuf, PathBuf) {
+    let folder = format!(
+        "{:04}/{:02}/{:02}",
+        md.datetime.year, md.datetime.month, md.datetime.day
+    );
+    (md.path.clone(), build_path(md, library, rename, folder))
+}
+
+fn build_monthly_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (PathBuf, PathBuf) {
+    let folder = format!("{:04}/{:02}", md.datetime.year, md.datetime.month);
+    (md.path.clone(), build_path(md, library, rename, folder))
+}
+
+fn build_path(md: &PhotoMetadata, library: PathBuf, rename: bool, folder: String) -> PathBuf {
+    let file_name = build_filename(md, rename).unwrap();
+    library.join(folder).join(file_name)
+}
+
+fn build_filename(md: &PhotoMetadata, rename: bool) -> Result<String, Err> {
+    if rename {
+        if let Some(ext) = md.path.extension() {
+            return Ok(format!(
+                "{:04}{:02}{:02}_{:02}{:02}{:02}.{}",
+                md.datetime.year,
+                md.datetime.month,
+                md.datetime.day,
+                md.datetime.hour,
+                md.datetime.minute,
+                md.datetime.second,
+                ext.display()
+            ));
+        };
+    } else if let Some(name) = md.path.file_name() {
+        return Ok(name.display().to_string());
+    };
+
+    Err("No file name".to_string())
+}
