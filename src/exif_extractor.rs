@@ -1,4 +1,5 @@
 use crate::types::PhotoDateTime;
+use chrono::NaiveDate;
 use exif::{DateTime, In, Reader, Tag, Value};
 use std::path::Path;
 
@@ -54,11 +55,22 @@ pub fn extract(path: &Path) -> Result<PhotoDateTime, ExifError> {
     if let Some(field) = exif.get_field(Tag::DateTime, In::PRIMARY) {
         match field.value {
             Value::Ascii(ref vec) if !vec.is_empty() => match DateTime::from_ascii(&vec[0]) {
-                Ok(datetime) => return Ok(datetime.into()),
+                Ok(dt) if is_valid_datetime(&dt) => return Ok(dt.into()),
                 Err(err) => return Err(ExifError::ParseDateError(err)),
+                _ => return Err(ExifError::NoDataError),
             },
             _ => (),
         }
     }
     Err(ExifError::NoDataError)
+}
+
+fn is_valid_datetime(dt: &DateTime) -> bool {
+    if dt.year < 1970 {
+        return false;
+    }
+
+    NaiveDate::from_ymd_opt(dt.year as i32, dt.month as u32, dt.day as u32)
+        .and_then(|date| date.and_hms_opt(dt.hour as u32, dt.minute as u32, dt.second as u32))
+        .is_some()
 }
