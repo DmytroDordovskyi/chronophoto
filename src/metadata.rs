@@ -9,7 +9,7 @@ pub fn convert(paths: Vec<PathBuf>) -> Vec<PhotoMetadata> {
         .filter_map(|(path, result)| match result {
             Ok(value) => Some((path, value)),
             Err(e) => {
-                eprintln!("Error: {}", e);
+                eprintln!("Error on extract exif from {}: {}", path.display(), e);
                 None
             }
         })

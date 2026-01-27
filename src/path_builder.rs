@@ -39,7 +39,8 @@ fn build_compact_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBu
         .into_iter()
         .map(|md| {
             let key = stat_key(&md);
-            if *stats.get(&key).unwrap() > args.limit {
+            let quantity = *stats.get(&key).expect("Should be at least 1");
+            if quantity > args.limit {
                 build_daily_path(&md, args.library.clone(), args.rename)
             } else {
                 build_monthly_path(&md, args.library.clone(), args.rename)
@@ -62,7 +63,7 @@ fn build_monthly_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (Pa
 }
 
 fn build_path(md: &PhotoMetadata, library: PathBuf, rename: bool, folder: String) -> PathBuf {
-    let file_name = build_filename(md, rename).unwrap();
+    let file_name = build_filename(md, rename).expect("photo must have filename/extension");
     library.join(folder).join(file_name)
 }
 

@@ -12,14 +12,16 @@ pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) {
         for (src, dst) in path_pairs.iter() {
             match move_one(src, dst) {
                 Ok(pb) => println!("File moved from {} to {}", src.display(), pb.display()),
-                Err(err) => eprintln!("Error during moving file: {}", err),
+                Err(err) => eprintln!("Error during moving {}: {}", src.display(), err),
             }
         }
     }
 }
 
 fn move_one(source: &PathBuf, destination: &PathBuf) -> Result<PathBuf, std::io::Error> {
-    let parent_dir = destination.parent().unwrap();
+    let parent_dir = destination
+        .parent()
+        .expect("destination should have parent directory");
     fs::create_dir_all(parent_dir)?;
 
     let final_destination = if fs::exists(destination)? {
@@ -36,8 +38,16 @@ fn next_available_name<'a>(
     file_path: &'a Path,
     parent_dir: &'a Path,
 ) -> Result<PathBuf, std::io::Error> {
-    let name = file_path.file_stem().unwrap().display().to_string();
-    let ext = file_path.extension().unwrap().display().to_string();
+    let name = file_path
+        .file_stem()
+        .expect("destination path must have a filename stem")
+        .display()
+        .to_string();
+    let ext = file_path
+        .extension()
+        .expect("destination path must have a file extension")
+        .display()
+        .to_string();
     let mut counter = 1;
 
     let mut new_path = PathBuf::from(format!(
