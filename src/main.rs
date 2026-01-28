@@ -15,8 +15,12 @@ struct CliArgs {
     limit: u16,
     #[arg(short, long, default_value_t = false)]
     rename: bool,
+    #[arg(short, long)]
+    log_file: Option<PathBuf>,
     #[arg(long, default_value_t = false)]
     dry_run: bool,
+    #[arg(short, long, default_value_t = false)]
+    verbose: bool,
 }
 
 impl TryFrom<CliArgs> for Args {
@@ -29,7 +33,9 @@ impl TryFrom<CliArgs> for Args {
             library: cli.library,
             limit: cli.limit,
             rename: cli.rename,
+            log_file: cli.log_file,
             dry_run: cli.dry_run,
+            verbose: cli.verbose,
         })
     }
 }

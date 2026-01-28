@@ -1,3 +1,4 @@
+use log::error;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
@@ -9,7 +10,7 @@ pub fn discover_images(root: PathBuf) -> Vec<PathBuf> {
         .filter_map(|e| match e {
             Ok(entry) => Some(entry),
             Err(err) => {
-                eprintln!("Discovery images: {}", err);
+                error!("Failed to access path during image discovery: {}", err);
                 None
             }
         })

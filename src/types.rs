@@ -42,5 +42,7 @@ pub struct Args {
     pub library: PathBuf,
     pub limit: u16,
     pub rename: bool,
+    pub log_file: Option<PathBuf>,
     pub dry_run: bool,
+    pub verbose: bool,
 }
