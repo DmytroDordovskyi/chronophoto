@@ -13,12 +13,12 @@ pub fn discover_images(root: PathBuf) -> Vec<PathBuf> {
                 None
             }
         })
-        .filter(with_allowed_ext)
+        .filter(has_allowed_extension)
         .map(|e| e.into_path())
         .collect()
 }
 
-fn with_allowed_ext(e: &DirEntry) -> bool {
+fn has_allowed_extension(e: &DirEntry) -> bool {
     e.path()
         .extension()
         .and_then(|s| s.to_str())

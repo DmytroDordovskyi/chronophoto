@@ -20,7 +20,7 @@ pub fn calc_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, Pa
 
 fn calc_stats(metadata: &[PhotoMetadata]) -> HashMap<String, u16> {
     metadata.iter().fold(HashMap::new(), |mut acc, md| {
-        let key = stat_key(md);
+        let key = group_key(md);
         match acc.get(&key) {
             Some(v) => acc.insert(key, v + 1),
             None => acc.insert(key, 1),
@@ -29,7 +29,7 @@ fn calc_stats(metadata: &[PhotoMetadata]) -> HashMap<String, u16> {
     })
 }
 
-fn stat_key(md: &PhotoMetadata) -> String {
+fn group_key(md: &PhotoMetadata) -> String {
     format!("{}-{}", md.datetime.year, md.datetime.month)
 }
 
@@ -38,7 +38,7 @@ fn build_compact_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBu
     metadata
         .into_iter()
         .map(|md| {
-            let key = stat_key(&md);
+            let key = group_key(&md);
             let quantity = *stats.get(&key).expect("Should be at least 1");
             if quantity > args.limit {
                 build_daily_path(&md, args.library.clone(), args.rename)

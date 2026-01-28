@@ -47,7 +47,7 @@ impl std::fmt::Display for ExifError {
     }
 }
 
-pub fn extract(path: &Path) -> Result<PhotoDateTime, ExifError> {
+pub fn extract_datetime(path: &Path) -> Result<PhotoDateTime, ExifError> {
     let file = std::fs::File::open(path)?;
     let mut bufreader = std::io::BufReader::new(&file);
     let exifreader = Reader::new();

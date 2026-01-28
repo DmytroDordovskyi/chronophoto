@@ -1,11 +1,11 @@
-use crate::exif_extractor::extract;
+use crate::exif_extractor::extract_datetime;
 use crate::types::PhotoMetadata;
 use std::path::PathBuf;
 
-pub fn convert(paths: Vec<PathBuf>) -> Vec<PhotoMetadata> {
+pub fn paths_to_metadata(paths: Vec<PathBuf>) -> Vec<PhotoMetadata> {
     paths
         .into_iter()
-        .map(|path| (path.clone(), extract(&path)))
+        .map(|path| (path.clone(), extract_datetime(&path)))
         .filter_map(|(path, result)| match result {
             Ok(value) => Some((path, value)),
             Err(e) => {
