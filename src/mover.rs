@@ -2,7 +2,7 @@ use log::{debug, error, info};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) {
+pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) -> (usize, usize) {
     info!("Will organize {} photos", path_pairs.len());
 
     if dry_run {
@@ -13,17 +13,29 @@ pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) {
                 dst.display()
             );
         }
+        (path_pairs.len(), 0)
     } else {
+        let mut moved = 0;
+        let mut failed = 0;
+
         for (src, dst) in path_pairs.iter() {
             match move_one(src, dst) {
-                Ok(pb) => debug!(
-                    "Successfully moved file from {} to {}",
-                    src.display(),
-                    pb.display()
-                ),
-                Err(err) => error!("Failed to move file {}: {}", src.display(), err),
+                Ok(pb) => {
+                    debug!(
+                        "Successfully moved file from {} to {}",
+                        src.display(),
+                        pb.display()
+                    );
+                    moved += 1;
+                }
+                Err(err) => {
+                    error!("Failed to move file {}: {}", src.display(), err);
+                    failed += 1;
+                }
             }
         }
+
+        (moved, failed)
     }
 }
 

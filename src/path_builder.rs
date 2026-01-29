@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 type Err = String;
 
-pub fn calc_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
+pub fn from_to_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
     match args.mode {
         Mode::Daily => metadata
             .into_iter()
@@ -18,7 +18,7 @@ pub fn calc_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, Pa
     }
 }
 
-fn calc_stats(metadata: &[PhotoMetadata]) -> HashMap<String, u16> {
+fn files_per_month(metadata: &[PhotoMetadata]) -> HashMap<String, u16> {
     metadata.iter().fold(HashMap::new(), |mut acc, md| {
         let key = group_key(md);
         match acc.get(&key) {
@@ -34,7 +34,7 @@ fn group_key(md: &PhotoMetadata) -> String {
 }
 
 fn build_compact_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
-    let stats = calc_stats(&metadata);
+    let stats = files_per_month(&metadata);
     metadata
         .into_iter()
         .map(|md| {

@@ -21,6 +21,17 @@ impl FromStr for Mode {
     }
 }
 
+pub struct Args {
+    pub source: PathBuf,
+    pub mode: Mode,
+    pub library: PathBuf,
+    pub limit: u16,
+    pub rename: bool,
+    pub log_file: Option<PathBuf>,
+    pub dry_run: bool,
+    pub verbose: bool,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct PhotoDateTime {
     pub year: u16,
@@ -34,15 +45,4 @@ pub struct PhotoDateTime {
 pub struct PhotoMetadata {
     pub path: PathBuf,
     pub datetime: PhotoDateTime,
-}
-
-pub struct Args {
-    pub source: PathBuf,
-    pub mode: Mode,
-    pub library: PathBuf,
-    pub limit: u16,
-    pub rename: bool,
-    pub log_file: Option<PathBuf>,
-    pub dry_run: bool,
-    pub verbose: bool,
 }

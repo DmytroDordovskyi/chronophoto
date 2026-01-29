@@ -1,7 +1,7 @@
 use crate::discovery::discover_images;
 use crate::metadata::paths_to_metadata;
 use crate::mover::move_multiple;
-use crate::path_builder::calc_paths;
+use crate::path_builder::from_to_paths;
 use crate::types::Args;
 use env_logger::{Builder, Target};
 use log::LevelFilter::{Debug, Info};
@@ -12,10 +12,33 @@ pub fn process(args: Args) {
     init_logger(&args);
 
     let paths = discover_images(args.source.clone());
-    info!("Found {} photos", paths.len());
+    let all_files_count: usize = paths.len();
+    info!("Found {} photos", all_files_count);
 
-    let path_pairs = calc_paths(paths_to_metadata(paths), &args);
-    move_multiple(path_pairs, args.dry_run)
+    let metadata_vec = paths_to_metadata(paths);
+
+    let path_pairs = from_to_paths(metadata_vec, &args);
+    let skipped = all_files_count - path_pairs.len();
+
+    let (moved, failed) = move_multiple(path_pairs, args.dry_run);
+
+    let summary = if args.dry_run {
+        format!(
+            "[DRY RUN] Processed {} files: {} would be moved, {} skipped (no EXIF)",
+            all_files_count, moved, skipped
+        )
+    } else {
+        format!(
+            "Processed {} files: {} moved, {} skipped (no EXIF), {} failed",
+            all_files_count, moved, skipped, failed
+        )
+    };
+
+    info!("{}", summary);
+
+    if args.log_file.is_some() {
+        println!("{}", summary);
+    }
 }
 
 fn init_logger(args: &Args) {
