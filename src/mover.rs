@@ -71,23 +71,11 @@ fn next_available_name<'a>(
         .to_string();
     let mut counter = 1;
 
-    let mut new_path = PathBuf::from(format!(
-        "{}/{}({}).{}",
-        parent_dir.display(),
-        name,
-        counter,
-        ext
-    ));
+    let mut new_path = parent_dir.join(format!("{}({}).{}", name, counter, ext));
 
     while fs::exists(&new_path)? {
         counter += 1;
-        new_path = PathBuf::from(format!(
-            "{}/{}({}).{}",
-            parent_dir.display(),
-            name,
-            counter,
-            ext
-        ));
+        new_path = parent_dir.join(format!("{}({}).{}", name, counter, ext));
     }
 
     Ok(new_path)

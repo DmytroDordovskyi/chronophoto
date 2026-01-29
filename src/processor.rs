@@ -6,14 +6,15 @@ use crate::types::Args;
 use env_logger::{Builder, Target};
 use log::LevelFilter::{Debug, Info};
 use log::info;
-use std::fs::File;
+use std::fs::{self, File, OpenOptions};
+use std::path::Path;
 
-pub fn process(args: Args) {
-    init_logger(&args);
+pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
+    validate_io_dirs(&args)?;
+    init_logger(&args)?;
 
     let paths = discover_images(args.source.clone());
     let all_files_count: usize = paths.len();
-    info!("Found {} photos", all_files_count);
 
     let metadata_vec = paths_to_metadata(paths);
 
@@ -35,13 +36,42 @@ pub fn process(args: Args) {
     };
 
     info!("{}", summary);
+    Ok(summary)
+}
 
-    if args.log_file.is_some() {
-        println!("{}", summary);
+fn validate_io_dirs(args: &Args) -> Result<(), Box<dyn std::error::Error>> {
+    if !args.source.exists() {
+        return Err(format!("Source directory does not exist: {:?}", args.source).into());
+    }
+
+    if args.library.exists() && !is_dir_writable(&args.library) {
+        return Err(format!(
+            "Library directory exists but is not writable: {:?}",
+            args.library
+        )
+        .into());
+    }
+
+    Ok(())
+}
+
+fn is_dir_writable(path: &Path) -> bool {
+    let test_file = path.join(".writability_test");
+
+    match OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&test_file)
+    {
+        Ok(_) => {
+            let _ = fs::remove_file(&test_file);
+            true
+        }
+        Err(_) => false,
     }
 }
 
-fn init_logger(args: &Args) {
+fn init_logger(args: &Args) -> Result<(), Box<dyn std::error::Error>> {
     let level = if args.verbose || args.dry_run {
         Debug
     } else {
@@ -49,13 +79,16 @@ fn init_logger(args: &Args) {
     };
 
     if let Some(path) = &args.log_file {
-        let log_file = File::create(path).expect("Failed to create log file");
-
-        Builder::from_default_env()
-            .target(Target::Pipe(Box::new(log_file)))
-            .filter_level(level)
-            .init();
+        match File::create(path) {
+            Ok(log_file) => Builder::from_default_env()
+                .target(Target::Pipe(Box::new(log_file)))
+                .filter_level(level)
+                .init(),
+            Err(e) => return Err(Box::new(e)),
+        }
     } else {
         Builder::from_default_env().filter_level(level).init();
     }
+
+    Ok(())
 }

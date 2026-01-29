@@ -42,10 +42,18 @@ impl TryFrom<CliArgs> for Args {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = CliArgs::parse();
-    if !args.source.exists() {
-        eprintln!("Error: Source directory does not exist: {:?}", args.source);
-        std::process::exit(1);
+    let has_log_file = args.log_file.is_some();
+
+    match process(args.try_into()?) {
+        Ok(summary) => {
+            if has_log_file {
+                println!("{}", summary);
+            }
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
     }
-    process(args.try_into()?);
-    Ok(())
 }

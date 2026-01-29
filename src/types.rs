@@ -16,7 +16,10 @@ impl FromStr for Mode {
             "daily" => Ok(Self::Daily),
             "monthly" => Ok(Self::Monthly),
             "compact" => Ok(Self::Compact),
-            _ => Err("Error: {}. Valid modes: daily, monthly, compact".to_string()),
+            _ => Err(format!(
+                "Error: '{}' is not a valid mode. Valid modes: daily, monthly, compact",
+                s
+            )),
         }
     }
 }

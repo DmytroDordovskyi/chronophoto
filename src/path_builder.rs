@@ -2,8 +2,6 @@ use crate::types::{Args, Mode, PhotoMetadata};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-type Err = String;
-
 pub fn from_to_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
     match args.mode {
         Mode::Daily => metadata
@@ -67,7 +65,7 @@ fn build_path(md: &PhotoMetadata, library: PathBuf, rename: bool, folder: String
     library.join(folder).join(file_name)
 }
 
-fn build_filename(md: &PhotoMetadata, rename: bool) -> Result<String, Err> {
+fn build_filename(md: &PhotoMetadata, rename: bool) -> Result<String, String> {
     if rename {
         if let Some(ext) = md.path.extension() {
             return Ok(format!(
