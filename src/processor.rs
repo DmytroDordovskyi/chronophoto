@@ -4,6 +4,7 @@ use crate::mover::move_multiple;
 use crate::path_builder::from_to_paths;
 use crate::types::Args;
 use env_logger::{Builder, Target};
+use indicatif::{ProgressBar, ProgressStyle};
 use log::LevelFilter::{Debug, Info};
 use log::info;
 use std::fs::{self, File, OpenOptions};
@@ -21,7 +22,22 @@ pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
     let path_pairs = from_to_paths(metadata_vec, &args);
     let skipped = all_files_count - path_pairs.len();
 
-    let (moved, failed) = move_multiple(path_pairs, args.dry_run);
+    let with_progress_bar = need_progress_bar(&args);
+
+    let pb = if with_progress_bar {
+        Some(
+            ProgressBar::new(path_pairs.len() as u64)
+                .with_message("Moving files")
+                .with_style(
+                    ProgressStyle::default_bar()
+                        .template("[{bar:40}] {pos}/{len} - {msg}")
+                        .unwrap(),
+                ),
+        )
+    } else {
+        None
+    };
+    let (moved, failed) = move_multiple(path_pairs, args.dry_run, &pb);
 
     let summary = if args.dry_run {
         format!(
@@ -35,7 +51,12 @@ pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
         )
     };
 
-    info!("{}", summary);
+    if let Some(pb) = pb {
+        pb.finish_with_message(summary.clone());
+    } else {
+        info!("{}", summary);
+    }
+
     Ok(summary)
 }
 
@@ -91,4 +112,8 @@ fn init_logger(args: &Args) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn need_progress_bar(args: &Args) -> bool {
+    !args.dry_run && args.log_file.is_some()
 }

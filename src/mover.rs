@@ -1,8 +1,13 @@
+use indicatif::ProgressBar;
 use log::{debug, error, info};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) -> (usize, usize) {
+pub fn move_multiple(
+    path_pairs: Vec<(PathBuf, PathBuf)>,
+    dry_run: bool,
+    progress_bar: &Option<ProgressBar>,
+) -> (usize, usize) {
     info!("Will organize {} photos", path_pairs.len());
 
     if dry_run {
@@ -32,6 +37,9 @@ pub fn move_multiple(path_pairs: Vec<(PathBuf, PathBuf)>, dry_run: bool) -> (usi
                     error!("Failed to move file {}: {}", src.display(), err);
                     failed += 1;
                 }
+            }
+            if let Some(pb) = progress_bar {
+                pb.inc(1);
             }
         }
 
