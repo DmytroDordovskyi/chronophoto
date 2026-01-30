@@ -2,6 +2,7 @@ use indicatif::ProgressBar;
 use log::{debug, error, info};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::io::ErrorKind;
 
 pub fn move_multiple(
     path_pairs: Vec<(PathBuf, PathBuf)>,
@@ -59,8 +60,16 @@ fn move_one(source: &PathBuf, destination: &PathBuf) -> Result<PathBuf, std::io:
         destination.to_path_buf()
     };
 
-    fs::rename(source, &final_destination)?;
-    Ok(final_destination)
+    match fs::rename(source, &final_destination) {
+        Ok(_) => Ok(final_destination),
+        Err(e) if e.kind() == ErrorKind::CrossesDevices => {
+            // Fallback: copy then delete
+            fs::copy(source, &final_destination)?;
+            fs::remove_file(source)?;
+            Ok(final_destination)
+        }
+        Err(e) => Err(e),
+    }
 }
 
 fn next_available_name<'a>(
