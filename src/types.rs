@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Mode {
     Daily,
     Monthly,
@@ -24,9 +24,31 @@ impl FromStr for Mode {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum Action {
+    Move,
+    Copy,
+}
+
+impl FromStr for Action {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "move" => Ok(Self::Move),
+            "copy" => Ok(Self::Copy),
+            _ => Err(format!(
+                "Error: '{}' is not a valid action. Valid actions: move or copy",
+                s
+            )),
+        }
+    }
+}
+
 pub struct Args {
     pub source: PathBuf,
     pub mode: Mode,
+    pub action: Action,
     pub library: PathBuf,
     pub limit: u16,
     pub rename: bool,

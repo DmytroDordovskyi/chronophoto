@@ -1,12 +1,15 @@
 use indicatif::ProgressBar;
 use log::{debug, error, info};
 use std::fs;
-use std::path::{Path, PathBuf};
 use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
 
-pub fn move_multiple(
+use crate::types::Action;
+
+pub fn transfer_multiple(
     path_pairs: Vec<(PathBuf, PathBuf)>,
     dry_run: bool,
+    action: Action,
     progress_bar: &Option<ProgressBar>,
 ) -> (usize, usize) {
     info!("Will organize {} photos", path_pairs.len());
@@ -14,28 +17,28 @@ pub fn move_multiple(
     if dry_run {
         for (src, dst) in path_pairs.iter() {
             debug!(
-                "[DRY RUN] Would move file from {} to {}",
+                "[DRY RUN] Would organize file from {} to {}",
                 src.display(),
                 dst.display()
             );
         }
         (path_pairs.len(), 0)
     } else {
-        let mut moved = 0;
+        let mut transferred = 0;
         let mut failed = 0;
 
         for (src, dst) in path_pairs.iter() {
-            match move_one(src, dst) {
+            match transfer_one(src, dst, action) {
                 Ok(pb) => {
                     debug!(
-                        "Successfully moved file from {} to {}",
+                        "Successfully transferred file from {} to {}",
                         src.display(),
                         pb.display()
                     );
-                    moved += 1;
+                    transferred += 1;
                 }
                 Err(err) => {
-                    error!("Failed to move file {}: {}", src.display(), err);
+                    error!("Failed to transfer file {}: {}", src.display(), err);
                     failed += 1;
                 }
             }
@@ -44,11 +47,15 @@ pub fn move_multiple(
             }
         }
 
-        (moved, failed)
+        (transferred, failed)
     }
 }
 
-fn move_one(source: &PathBuf, destination: &PathBuf) -> Result<PathBuf, std::io::Error> {
+fn transfer_one(
+    source: &PathBuf,
+    destination: &PathBuf,
+    action: Action,
+) -> Result<PathBuf, std::io::Error> {
     let parent_dir = destination
         .parent()
         .expect("destination should have parent directory");
@@ -60,13 +67,23 @@ fn move_one(source: &PathBuf, destination: &PathBuf) -> Result<PathBuf, std::io:
         destination.to_path_buf()
     };
 
-    match fs::rename(source, &final_destination) {
-        Ok(_) => Ok(final_destination),
+    match action {
+        Action::Move => rename(source, final_destination),
+        Action::Copy => {
+            fs::copy(source, &final_destination)?;
+            Ok(final_destination)
+        }
+    }
+}
+
+fn rename(source: &PathBuf, destination: PathBuf) -> Result<PathBuf, std::io::Error> {
+    match fs::rename(source, &destination) {
+        Ok(_) => Ok(destination),
         Err(e) if e.kind() == ErrorKind::CrossesDevices => {
             // Fallback: copy then delete
-            fs::copy(source, &final_destination)?;
+            fs::copy(source, &destination)?;
             fs::remove_file(source)?;
-            Ok(final_destination)
+            Ok(destination)
         }
         Err(e) => Err(e),
     }

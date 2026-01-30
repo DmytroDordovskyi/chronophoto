@@ -9,6 +9,8 @@ struct CliArgs {
     source: PathBuf,
     #[arg(short, long, default_value = "daily")]
     mode: String,
+    #[arg(short, long, default_value = "move")]
+    action: String,
     #[arg(long)]
     library: PathBuf,
     #[arg(short = 'n', long, default_value_t = 25)]
@@ -30,6 +32,7 @@ impl TryFrom<CliArgs> for Args {
         Ok(Args {
             source: cli.source,
             mode: cli.mode.parse()?,
+            action: cli.action.parse()?,
             library: cli.library,
             limit: cli.limit,
             rename: cli.rename,

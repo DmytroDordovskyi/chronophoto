@@ -1,7 +1,7 @@
 use crate::discovery::discover_images;
 use crate::metadata::paths_to_metadata;
-use crate::mover::move_multiple;
 use crate::path_builder::from_to_paths;
+use crate::transfer::transfer_multiple;
 use crate::types::Args;
 use env_logger::{Builder, Target};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -37,17 +37,17 @@ pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
     } else {
         None
     };
-    let (moved, failed) = move_multiple(path_pairs, args.dry_run, &pb);
+    let (transferred, failed) = transfer_multiple(path_pairs, args.dry_run, args.action, &pb);
 
     let summary = if args.dry_run {
         format!(
-            "[DRY RUN] Processed {} files: {} would be moved, {} skipped (no EXIF)",
-            all_files_count, moved, skipped
+            "[DRY RUN] Processed {} files: {} would be transferred, {} skipped (no EXIF)",
+            all_files_count, transferred, skipped
         )
     } else {
         format!(
-            "Processed {} files: {} moved, {} skipped (no EXIF), {} failed",
-            all_files_count, moved, skipped, failed
+            "Processed {} files: {} transferred, {} skipped (no EXIF), {} failed",
+            all_files_count, transferred, skipped, failed
         )
     };
 
