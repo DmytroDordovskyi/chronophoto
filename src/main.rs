@@ -6,21 +6,37 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct CliArgs {
+    /// Directory containing photos to organize
     source: PathBuf,
+
+    /// Root folder of the photo library
+    library: PathBuf,
+
+    /// Folder structure pattern: daily, monthly, or compact
     #[arg(short, long, default_value = "daily")]
     mode: String,
-    #[arg(short, long, default_value = "move")]
-    action: String,
-    #[arg(long)]
-    library: PathBuf,
+
+    /// Maximum photos per month for compact mode
     #[arg(short = 'n', long, default_value_t = 25)]
     limit: u16,
+
+    /// Rename files to YYYYMMDD_hhmmss format
     #[arg(short, long, default_value_t = false)]
     rename: bool,
-    #[arg(short, long)]
-    log_file: Option<PathBuf>,
+
+    /// File operation: move or copy
+    #[arg(short, long, default_value = "move")]
+    action: String,
+
+    /// Preview changes without modifying files
     #[arg(long, default_value_t = false)]
     dry_run: bool,
+
+    /// Path to write log file
+    #[arg(short, long)]
+    log_file: Option<PathBuf>,
+
+    /// Enable verbose logging
     #[arg(short, long, default_value_t = false)]
     verbose: bool,
 }

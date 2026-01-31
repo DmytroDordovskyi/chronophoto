@@ -47,13 +47,13 @@ impl FromStr for Action {
 
 pub struct Args {
     pub source: PathBuf,
-    pub mode: Mode,
-    pub action: Action,
     pub library: PathBuf,
+    pub mode: Mode,
     pub limit: u16,
     pub rename: bool,
-    pub log_file: Option<PathBuf>,
+    pub action: Action,
     pub dry_run: bool,
+    pub log_file: Option<PathBuf>,
     pub verbose: bool,
 }
 
