@@ -31,14 +31,14 @@ pub fn transfer_multiple(
             match transfer_one(src, dst, action) {
                 Ok(pb) => {
                     debug!(
-                        "Successfully transferred file from {} to {}",
+                        "Successfully organized file from {} to {}",
                         src.display(),
                         pb.display()
                     );
                     transferred += 1;
                 }
                 Err(err) => {
-                    error!("Failed to transfer file {}: {}", src.display(), err);
+                    error!("Failed to organize file {}: {}", src.display(), err);
                     failed += 1;
                 }
             }

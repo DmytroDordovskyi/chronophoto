@@ -1,6 +1,6 @@
-# Photo Library Specification
+# Chronophoto Specification
 
-photo-library is a CLI tool to organize photos based on EXIF creation timestamp data.
+chronophoto is a CLI tool to organize photos based on EXIF creation timestamp data.
 The main purpose of the tool is to organize folders and move photos, placing each one in an appropriate folder.
 Folders are created if they don't exist or reused if they already exist.
 
@@ -9,7 +9,7 @@ Folders are created if they don't exist or reused if they already exist.
 The tool accepts the following arguments:
 
 ```
-photo-library <source> [OPTIONS]
+chronophoto <source> [OPTIONS]
 ```
 
 **Positional Arguments:**
@@ -34,13 +34,13 @@ photo-library <source> [OPTIONS]
 
 ```bash
 # Preview what would happen (dry-run)
-photo-library . --mode=compact --limit=20 --library=~/Pictures/my-photos --rename --dry-run
+chronophoto . --mode=compact --limit=20 --library=~/Pictures/my-photos --rename --dry-run
 
 # Actually organize photos
-photo-library . --mode=compact --limit=20 --library=~/Pictures/my-photos --rename
+chronophoto . --mode=compact --limit=20 --library=~/Pictures/my-photos --rename
 
 # Simple daily organization without renaming
-photo-library ~/Downloads --mode=daily --library=~/Pictures/organized
+chronophoto ~/Downloads --mode=daily --library=~/Pictures/organized
 ```
 
 ## Organization Modes
