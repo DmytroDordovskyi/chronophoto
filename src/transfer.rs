@@ -98,18 +98,19 @@ fn next_available_name<'a>(
         .expect("destination path must have a filename stem")
         .display()
         .to_string();
+
     let ext = file_path
         .extension()
-        .expect("destination path must have a file extension")
-        .display()
-        .to_string();
+        .map(|e| format!(".{}", e.display()))
+        .unwrap_or_default();
+
     let mut counter = 1;
 
-    let mut new_path = parent_dir.join(format!("{}({}).{}", name, counter, ext));
+    let mut new_path = parent_dir.join(format!("{}({}){}", name, counter, ext));
 
     while fs::exists(&new_path)? {
         counter += 1;
-        new_path = parent_dir.join(format!("{}({}).{}", name, counter, ext));
+        new_path = parent_dir.join(format!("{}({}){}", name, counter, ext));
     }
 
     Ok(new_path)

@@ -1,6 +1,6 @@
-use clap::Parser;
 use chronophoto::processor::process;
 use chronophoto::types::Args;
+use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]

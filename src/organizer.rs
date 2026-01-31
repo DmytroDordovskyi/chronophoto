@@ -61,24 +61,25 @@ fn build_monthly_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (Pa
 }
 
 fn build_path(md: &PhotoMetadata, library: PathBuf, rename: bool, folder: String) -> PathBuf {
-    let file_name = build_filename(md, rename).expect("photo must have filename/extension");
+    let file_name = build_filename(md, rename).expect("photo must have filename");
     library.join(folder).join(file_name)
 }
 
 fn build_filename(md: &PhotoMetadata, rename: bool) -> Result<String, String> {
     if rename {
+        let mut file_name = format!(
+            "{:04}{:02}{:02}_{:02}{:02}{:02}",
+            md.datetime.year,
+            md.datetime.month,
+            md.datetime.day,
+            md.datetime.hour,
+            md.datetime.minute,
+            md.datetime.second
+        );
         if let Some(ext) = md.path.extension() {
-            return Ok(format!(
-                "{:04}{:02}{:02}_{:02}{:02}{:02}.{}",
-                md.datetime.year,
-                md.datetime.month,
-                md.datetime.day,
-                md.datetime.hour,
-                md.datetime.minute,
-                md.datetime.second,
-                ext.display()
-            ));
+            file_name += &format!(".{}", ext.display());
         };
+        return Ok(file_name);
     } else if let Some(name) = md.path.file_name() {
         return Ok(name.display().to_string());
     };

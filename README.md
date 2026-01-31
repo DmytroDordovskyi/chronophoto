@@ -121,13 +121,7 @@ chronophoto ~/Downloads ~/Pictures/Library \
 
 ## Supported File Formats
 
-Chronophoto supports all standard image formats that contain EXIF data:
-- JPEG/JPG
-- PNG
-- TIFF
-- BMP
-- WEBP
-- And other formats supported by the EXIF library
+Chronophoto supports common image formats that contain EXIF metadata, including JPEG, PNG, TIFF, HEIC/HEIF, and WebP. Photos without valid EXIF timestamp data will be skipped and logged.
 
 ## File Naming
 

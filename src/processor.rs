@@ -1,4 +1,4 @@
-use crate::discovery::discover_images;
+use crate::discovery::discover_files;
 use crate::metadata::paths_to_metadata;
 use crate::organizer::from_to_paths;
 use crate::setup::{init_logger, need_progress_bar, validate_io_dirs};
@@ -13,7 +13,7 @@ pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
     validate_io_dirs(&args)?;
     init_logger(&args)?;
 
-    let paths = discover_images(args.source.clone());
+    let paths = discover_files(args.source.clone());
     let all_files_count: usize = paths.len();
 
     let metadata_vec = paths_to_metadata(paths);
