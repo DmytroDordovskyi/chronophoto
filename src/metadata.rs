@@ -94,3 +94,177 @@ fn is_valid_datetime(dt: &DateTime) -> bool {
         .and_then(|date| date.and_hms_opt(dt.hour as u32, dt.minute as u32, dt.second as u32))
         .is_some()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod is_valid_datetime {
+        use super::*;
+
+        #[test]
+        fn test_valid_datetime() {
+            let dt = DateTime {
+                year: 2026,
+                month: 6,
+                day: 15,
+                hour: 14,
+                minute: 30,
+                second: 45,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_year_outdated() {
+            let dt = DateTime {
+                year: 1969,
+                month: 12,
+                day: 31,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_boundary_year() {
+            let dt = DateTime {
+                year: 1970,
+                month: 1,
+                day: 1,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_month_overflow() {
+            let dt = DateTime {
+                year: 2026,
+                month: 13,
+                day: 1,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_month_zero() {
+            let dt = DateTime {
+                year: 2026,
+                month: 0,
+                day: 15,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_day_overflow() {
+            let dt = DateTime {
+                year: 2026,
+                month: 2,
+                day: 30,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_leap_year_valid() {
+            let dt = DateTime {
+                year: 2024,
+                month: 2,
+                day: 29,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_leap_year_invalid() {
+            let dt = DateTime {
+                year: 2023,
+                month: 2,
+                day: 29,
+                hour: 0,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_hour_overflow() {
+            let dt = DateTime {
+                year: 2026,
+                month: 6,
+                day: 15,
+                hour: 24,
+                minute: 0,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_minute_overflow() {
+            let dt = DateTime {
+                year: 2026,
+                month: 6,
+                day: 15,
+                hour: 12,
+                minute: 60,
+                second: 0,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+
+        #[test]
+        fn test_second_overflow() {
+            let dt = DateTime {
+                year: 2026,
+                month: 6,
+                day: 15,
+                hour: 12,
+                minute: 30,
+                second: 60,
+                nanosecond: None,
+                offset: None,
+            };
+            assert!(!is_valid_datetime(&dt));
+        }
+    }
+}

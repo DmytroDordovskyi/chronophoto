@@ -62,7 +62,7 @@ fn transfer_one(
     fs::create_dir_all(parent_dir)?;
 
     let final_destination = if fs::exists(destination)? {
-        next_available_name(destination, parent_dir)?
+        next_available_name(destination, parent_dir, |p| fs::exists(p))?
     } else {
         destination.to_path_buf()
     };
@@ -89,10 +89,14 @@ fn rename(source: &PathBuf, destination: PathBuf) -> Result<PathBuf, std::io::Er
     }
 }
 
-fn next_available_name<'a>(
+fn next_available_name<'a, F>(
     file_path: &'a Path,
     parent_dir: &'a Path,
-) -> Result<PathBuf, std::io::Error> {
+    exists_fn: F,
+) -> Result<PathBuf, std::io::Error>
+where
+    F: Fn(&Path) -> Result<bool, std::io::Error>,
+{
     let name = file_path
         .file_stem()
         .expect("destination path must have a filename stem")
@@ -108,10 +112,69 @@ fn next_available_name<'a>(
 
     let mut new_path = parent_dir.join(format!("{}({}){}", name, counter, ext));
 
-    while fs::exists(&new_path)? {
+    while exists_fn(&new_path)? {
         counter += 1;
         new_path = parent_dir.join(format!("{}({}){}", name, counter, ext));
     }
 
     Ok(new_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_next_available_name_no_conflicts() {
+        let file_path = Path::new("photos/myfile.jpg");
+        let parent_dir = Path::new("photos");
+
+        let result = next_available_name(file_path, parent_dir, |_p| Ok(false));
+
+        assert_eq!(
+            result.unwrap(),
+            PathBuf::from("photos/myfile(1).jpg")
+        );
+    }
+
+    #[test]
+    fn test_next_available_name_with_conflicts() {
+        let file_path = Path::new("photos/myfile.jpg");
+        let parent_dir = Path::new("photos");
+
+        let exists_fn = |p: &Path| {
+            let path_str = p.to_str().unwrap();
+            Ok(path_str.contains("(1)") || path_str.contains("(2)"))
+        };
+
+        let result = next_available_name(file_path, parent_dir, exists_fn);
+
+        assert_eq!(
+            result.unwrap(),
+            PathBuf::from("photos/myfile(3).jpg")
+        );
+    }
+
+    #[test]
+    fn test_next_available_name_no_extension() {
+        let file_path = Path::new("photos/myfile");
+        let parent_dir = Path::new("photos");
+
+        let result = next_available_name(file_path, parent_dir, |_p| Ok(false));
+
+        assert_eq!(result.unwrap(), PathBuf::from("photos/myfile(1)"));
+    }
+
+    #[test]
+    fn test_next_available_name_multiple_dots() {
+        let file_path = Path::new("archive/photo.backup.jpg");
+        let parent_dir = Path::new("archive");
+
+        let result = next_available_name(file_path, parent_dir, |_p| Ok(false));
+
+        assert_eq!(
+            result.unwrap(),
+            PathBuf::from("archive/photo.backup(1).jpg")
+        );
+    }
 }

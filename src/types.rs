@@ -71,3 +71,81 @@ pub struct PhotoMetadata {
     pub path: PathBuf,
     pub datetime: PhotoDateTime,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod mode_from_str {
+        use super::*;
+
+        #[test]
+        fn test_valid_daily() {
+            assert!(matches!(Mode::from_str("daily"), Ok(Mode::Daily)));
+        }
+
+        #[test]
+        fn test_valid_monthly() {
+            assert!(matches!(Mode::from_str("monthly"), Ok(Mode::Monthly)));
+        }
+
+        #[test]
+        fn test_valid_compact() {
+            assert!(matches!(Mode::from_str("compact"), Ok(Mode::Compact)));
+        }
+
+        #[test]
+        fn test_invalid_case() {
+            let result = Mode::from_str("Daily");
+            assert!(result.is_err());
+            assert_eq!(result.unwrap_err(), "Error: 'Daily' is not a valid mode. Valid modes: daily, monthly, compact");
+        }
+
+        #[test]
+        fn test_invalid_value() {
+            let result = Mode::from_str("weekly");
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("weekly"));
+        }
+
+        #[test]
+        fn test_empty_string() {
+            let result = Mode::from_str("");
+            assert!(result.is_err());
+        }
+    }
+
+    mod action_from_str {
+        use super::*;
+
+        #[test]
+        fn test_valid_move() {
+            assert!(matches!(Action::from_str("move"), Ok(Action::Move)));
+        }
+
+        #[test]
+        fn test_valid_copy() {
+            assert!(matches!(Action::from_str("copy"), Ok(Action::Copy)));
+        }
+
+        #[test]
+        fn test_invalid_case() {
+            let result = Action::from_str("Move");
+            assert!(result.is_err());
+            assert_eq!(result.unwrap_err(), "Error: 'Move' is not a valid action. Valid actions: move or copy")
+        }
+
+        #[test]
+        fn test_invalid_value() {
+            let result = Action::from_str("delete");
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("delete"));
+        }
+
+        #[test]
+        fn test_empty_string() {
+            let result = Action::from_str("");
+            assert!(result.is_err());
+        }
+    }
+}
