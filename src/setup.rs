@@ -13,10 +13,12 @@ pub fn init_logger(args: &Args) -> Result<(), Box<dyn std::error::Error>> {
 
     if let Some(path) = &args.log_file {
         match File::create(path) {
-            Ok(log_file) => Builder::from_default_env()
-                .target(Target::Pipe(Box::new(log_file)))
-                .filter_level(level)
-                .init(),
+            Ok(log_file) => {
+                let _ = Builder::from_default_env()
+                    .target(Target::Pipe(Box::new(log_file)))
+                    .filter_level(level)
+                    .try_init();
+            }
             Err(e) => return Err(Box::new(e)),
         }
     } else {

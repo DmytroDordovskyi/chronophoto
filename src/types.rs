@@ -6,6 +6,7 @@ pub enum Mode {
     Daily,
     Monthly,
     Compact,
+    Flat,
 }
 
 impl FromStr for Mode {
@@ -16,8 +17,9 @@ impl FromStr for Mode {
             "daily" => Ok(Self::Daily),
             "monthly" => Ok(Self::Monthly),
             "compact" => Ok(Self::Compact),
+            "flat" => Ok(Self::Flat),
             _ => Err(format!(
-                "Error: '{}' is not a valid mode. Valid modes: daily, monthly, compact",
+                "Error: '{}' is not a valid mode. Valid modes: daily, monthly, compact or flat",
                 s
             )),
         }
@@ -96,12 +98,17 @@ mod tests {
         }
 
         #[test]
+        fn test_valid_flat() {
+            assert!(matches!(Mode::from_str("flat"), Ok(Mode::Flat)));
+        }
+
+        #[test]
         fn test_invalid_case() {
             let result = Mode::from_str("Daily");
             assert!(result.is_err());
             assert_eq!(
                 result.unwrap_err(),
-                "Error: 'Daily' is not a valid mode. Valid modes: daily, monthly, compact"
+                "Error: 'Daily' is not a valid mode. Valid modes: daily, monthly, compact or flat"
             );
         }
 

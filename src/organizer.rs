@@ -13,6 +13,7 @@ pub fn from_to_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf,
             .map(|md| build_monthly_path(&md, args.library.clone(), args.rename))
             .collect(),
         Mode::Compact => build_compact_paths(metadata, args),
+        Mode::Flat => build_flat_paths(metadata, args),
     }
 }
 
@@ -52,17 +53,43 @@ fn build_daily_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (Path
         "{:04}/{:02}/{:02}",
         md.datetime.year, md.datetime.month, md.datetime.day
     );
-    (md.path.clone(), build_path(md, library, rename, folder))
+    (
+        md.path.clone(),
+        build_path(md, library, rename, Some(folder)),
+    )
 }
 
 fn build_monthly_path(md: &PhotoMetadata, library: PathBuf, rename: bool) -> (PathBuf, PathBuf) {
     let folder = format!("{:04}/{:02}", md.datetime.year, md.datetime.month);
-    (md.path.clone(), build_path(md, library, rename, folder))
+    (
+        md.path.clone(),
+        build_path(md, library, rename, Some(folder)),
+    )
 }
 
-fn build_path(md: &PhotoMetadata, library: PathBuf, rename: bool, folder: String) -> PathBuf {
+fn build_flat_paths(metadata: Vec<PhotoMetadata>, args: &Args) -> Vec<(PathBuf, PathBuf)> {
+    metadata
+        .into_iter()
+        .map(|md| {
+            (
+                md.path.clone(),
+                build_path(&md, args.library.clone(), args.rename, None),
+            )
+        })
+        .collect()
+}
+
+fn build_path(
+    md: &PhotoMetadata,
+    library: PathBuf,
+    rename: bool,
+    folder: Option<String>,
+) -> PathBuf {
     let file_name = build_filename(md, rename).expect("photo must have filename");
-    library.join(folder).join(file_name)
+    match folder {
+        Some(folder) => library.join(folder).join(file_name),
+        None => library.join(file_name),
+    }
 }
 
 fn build_filename(md: &PhotoMetadata, rename: bool) -> Result<String, String> {
@@ -309,5 +336,31 @@ mod tests {
         assert_eq!(result[1].1, PathBuf::from("test_dir/2026/02/01/photo2.jpg"));
         assert_eq!(result[2].1, PathBuf::from("test_dir/2026/02/01/photo3.gif"));
         assert_eq!(result[3].1, PathBuf::from("test_dir/2026/02/20/photo4.png"));
+    }
+
+    #[test]
+    fn test_flat_mode_without_rename() {
+        let metadata = create_test_metadata();
+        let args = create_test_args(Mode::Flat, false, 25);
+        let result = from_to_paths(metadata, &args);
+
+        assert_eq!(result.len(), 4);
+        assert_eq!(result[0].1, PathBuf::from("test_dir/photo1.png"));
+        assert_eq!(result[1].1, PathBuf::from("test_dir/photo2.jpg"));
+        assert_eq!(result[2].1, PathBuf::from("test_dir/photo3.gif"));
+        assert_eq!(result[3].1, PathBuf::from("test_dir/photo4.png"));
+    }
+
+    #[test]
+    fn test_flat_mode_with_rename() {
+        let metadata = create_test_metadata();
+        let args = create_test_args(Mode::Flat, true, 25);
+        let result = from_to_paths(metadata, &args);
+
+        assert_eq!(result.len(), 4);
+        assert_eq!(result[0].1, PathBuf::from("test_dir/20251220_141530.png"));
+        assert_eq!(result[1].1, PathBuf::from("test_dir/20260201_103045.jpg"));
+        assert_eq!(result[2].1, PathBuf::from("test_dir/20260201_080000.gif"));
+        assert_eq!(result[3].1, PathBuf::from("test_dir/20260220_141530.png"));
     }
 }

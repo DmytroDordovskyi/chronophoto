@@ -14,6 +14,8 @@ fn copy_fixture(fixture_name: &str, dest: PathBuf) {
 }
 
 fn create_args(source: PathBuf, library: PathBuf) -> Args {
+    // Create temp log file to suppress console output during tests
+    let log_file = tempfile::NamedTempFile::new().unwrap();
     Args {
         source,
         library,
@@ -22,7 +24,7 @@ fn create_args(source: PathBuf, library: PathBuf) -> Args {
         rename: false,
         action: Action::Move,
         dry_run: false,
-        log_file: None,
+        log_file: Some(log_file.path().to_path_buf()),
         verbose: false,
     }
 }
@@ -119,6 +121,33 @@ fn test_compact_with_limit() {
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo3.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/01/photo4")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/01/photo5")).unwrap());
+}
+
+#[test]
+fn test_flat() {
+    let (temp_source, temp_library) = setup_dirs();
+
+    fs::create_dir_all(temp_source.path().join("qqq")).unwrap();
+    copy_fixture(
+        "photo_2025_06_15.jpg",
+        temp_source.path().join("photo1.jpg"),
+    );
+    copy_fixture("photo_no_extension", temp_source.path().join("qqq/photo2"));
+
+    let mut args = create_args(
+        temp_source.path().to_path_buf(),
+        temp_library.path().to_path_buf(),
+    );
+    args.mode = Mode::Flat;
+
+    let result = process(args);
+    assert!(result.is_ok());
+    assert_eq!(
+        result.unwrap(),
+        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+    );
+    assert!(fs::exists(temp_library.path().join("photo1.jpg")).unwrap());
+    assert!(fs::exists(temp_library.path().join("photo2")).unwrap());
 }
 
 #[test]

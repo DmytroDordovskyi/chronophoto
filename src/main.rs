@@ -12,7 +12,7 @@ struct CliArgs {
     /// Root folder of the photo library
     library: PathBuf,
 
-    /// Folder structure pattern: daily, monthly, or compact
+    /// Folder structure pattern: daily, monthly, compact, or flat (no subfolders)
     #[arg(short, long, default_value = "daily")]
     mode: String,
 

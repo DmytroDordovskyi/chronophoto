@@ -9,7 +9,7 @@ Chronophoto helps you organize your photos by reading the creation timestamp fro
 ## Features
 
 - **Smart Organization**: Automatically creates folder structures based on photo timestamps
-- **Multiple Modes**: Choose between daily, monthly, or compact organization
+- **Multiple Modes**: Choose between daily, monthly, compact or flat organization
 - **Flexible Operations**: Move or copy files to preserve originals
 - **Auto-Rename**: Optionally rename files to timestamp format (YYYYMMDD_hhmmss)
 - **Conflict Resolution**: Automatically handles duplicate filenames
@@ -42,7 +42,7 @@ chronophoto <source> <library> [OPTIONS]
 
 | Option | Short | Description | Default |
 |--------|-------|-------------|---------|
-| `--mode` | `-m` | Organization mode: `daily`, `monthly`, or `compact` | `daily` |
+| `--mode` | `-m` | Organization mode: `daily`, `monthly`, `compact` or `flat` | `daily` |
 | `--limit` | `-n` | Max photos per month for compact mode | `25` |
 | `--rename` | `-r` | Rename files to YYYYMMDD_hhmmss format | `false` |
 | `--action` | `-a` | File operation: `move` or `copy` | `move` |
@@ -81,6 +81,15 @@ Intelligently switches between daily and monthly based on photo count:
 - **Monthly structure** if month has ≤ limit photos (default: 25)
 - **Daily structure** if month has > limit photos
 
+### Flat Mode
+Transfers all photos to library root. **Best used with `--rename`** for chronological sorting.
+```
+library/
+   ├── 20251217_001122.jpg
+   ├── 20260129_112233.jpg
+   └── 20260131_223344.jpg
+```
+   
 ## Examples
 
 ### Preview organization (recommended first step)

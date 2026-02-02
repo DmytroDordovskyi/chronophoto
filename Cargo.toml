@@ -17,5 +17,7 @@ env_logger = "0.11.8"
 indicatif = "0.18.3"
 kamadak-exif = "0.6.1"
 log = "0.4.29"
-tempfile = "3.24.0"
 walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3.24.0"
