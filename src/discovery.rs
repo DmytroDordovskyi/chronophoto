@@ -12,6 +12,7 @@ pub fn discover_files(root: PathBuf) -> Vec<PathBuf> {
                 None
             }
         })
+        .filter(|e| e.file_type().is_file())
         .map(|e| e.into_path())
         .collect()
 }

@@ -20,7 +20,7 @@ pub fn init_logger(args: &Args) -> Result<(), Box<dyn std::error::Error>> {
             Err(e) => return Err(Box::new(e)),
         }
     } else {
-        Builder::from_default_env().filter_level(level).init();
+        let _ = Builder::from_default_env().filter_level(level).try_init();
     }
 
     Ok(())

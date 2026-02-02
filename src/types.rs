@@ -45,6 +45,7 @@ impl FromStr for Action {
     }
 }
 
+#[derive(Clone)]
 pub struct Args {
     pub source: PathBuf,
     pub library: PathBuf,
@@ -98,7 +99,10 @@ mod tests {
         fn test_invalid_case() {
             let result = Mode::from_str("Daily");
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Error: 'Daily' is not a valid mode. Valid modes: daily, monthly, compact");
+            assert_eq!(
+                result.unwrap_err(),
+                "Error: 'Daily' is not a valid mode. Valid modes: daily, monthly, compact"
+            );
         }
 
         #[test]
@@ -132,7 +136,10 @@ mod tests {
         fn test_invalid_case() {
             let result = Action::from_str("Move");
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Error: 'Move' is not a valid action. Valid actions: move or copy")
+            assert_eq!(
+                result.unwrap_err(),
+                "Error: 'Move' is not a valid action. Valid actions: move or copy"
+            )
         }
 
         #[test]

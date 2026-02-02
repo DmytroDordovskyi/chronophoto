@@ -131,10 +131,7 @@ mod tests {
 
         let result = next_available_name(file_path, parent_dir, |_p| Ok(false));
 
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("photos/myfile(1).jpg")
-        );
+        assert_eq!(result.unwrap(), PathBuf::from("photos/myfile(1).jpg"));
     }
 
     #[test]
@@ -149,10 +146,7 @@ mod tests {
 
         let result = next_available_name(file_path, parent_dir, exists_fn);
 
-        assert_eq!(
-            result.unwrap(),
-            PathBuf::from("photos/myfile(3).jpg")
-        );
+        assert_eq!(result.unwrap(), PathBuf::from("photos/myfile(3).jpg"));
     }
 
     #[test]
