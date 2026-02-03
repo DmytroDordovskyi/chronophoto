@@ -36,17 +36,18 @@ pub fn process(args: Args) -> Result<String, Box<dyn std::error::Error>> {
     } else {
         None
     };
-    let (transferred, failed) = transfer_multiple(path_pairs, args.dry_run, args.action, &pb);
+    let (transferred, already_organized, failed) =
+        transfer_multiple(path_pairs, args.dry_run, args.action, &pb);
 
     let summary = if args.dry_run {
         format!(
-            "[DRY RUN] Processed {} files: {} would be transferred, {} skipped (no EXIF)",
-            all_files_count, transferred, skipped
+            "[DRY RUN] Processed {} files: {} would be transferred, {} were already organized, {} skipped (no EXIF)",
+            all_files_count, transferred, already_organized, skipped
         )
     } else {
         format!(
-            "Processed {} files: {} transferred, {} skipped (no EXIF), {} failed",
-            all_files_count, transferred, skipped, failed
+            "Processed {} files: {} transferred, {} were already organized, {} skipped (no EXIF), {} failed",
+            all_files_count, transferred, already_organized, skipped, failed
         )
     };
 

@@ -49,7 +49,7 @@ fn test_daily_default() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 2 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/01/01/photo2")).unwrap());
@@ -77,7 +77,7 @@ fn test_monthly() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 2 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/01/photo2")).unwrap());
@@ -114,7 +114,7 @@ fn test_compact_with_limit() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 5 files: 5 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 5 files: 5 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo2.jpg")).unwrap());
@@ -144,7 +144,7 @@ fn test_flat() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 2 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("photo1.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("photo2")).unwrap());
@@ -169,7 +169,7 @@ fn test_rename() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 1 files: 1 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 1 files: 1 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/20250615_143000.jpg")).unwrap());
 }
@@ -193,7 +193,7 @@ fn test_copy() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 1 files: 1 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 1 files: 1 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_source.path().join("photo1.jpg")).unwrap());
@@ -218,7 +218,7 @@ fn test_move() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 1 files: 1 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 1 files: 1 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(!fs::exists(temp_source.path().join("photo1.jpg")).unwrap());
@@ -243,10 +243,43 @@ fn test_dry_run() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "[DRY RUN] Processed 1 files: 1 would be transferred, 0 skipped (no EXIF)"
+        "[DRY RUN] Processed 1 files: 1 would be transferred, 0 were already organized, 0 skipped (no EXIF)"
     );
     assert!(!fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_source.path().join("photo1.jpg")).unwrap());
+}
+
+#[test]
+fn test_already_organized() {
+    let (temp_source, temp_library) = setup_dirs();
+
+    copy_fixture(
+        "photo_2025_06_15.jpg",
+        temp_source.path().join("photo1.jpg"),
+    );
+    let args = create_args(
+        temp_source.path().to_path_buf(),
+        temp_library.path().to_path_buf(),
+    );
+
+    let result = process(args);
+    assert!(result.is_ok());
+    assert_eq!(
+        result.unwrap(),
+        "Processed 1 files: 1 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
+    );
+
+    let args = create_args(
+        temp_library.path().to_path_buf(),
+        temp_library.path().to_path_buf(),
+    );
+
+    let result = process(args);
+    assert!(result.is_ok());
+    assert_eq!(
+        result.unwrap(),
+        "Processed 1 files: 0 transferred, 1 were already organized, 0 skipped (no EXIF), 0 failed"
+    );
 }
 
 #[test]
@@ -268,7 +301,7 @@ fn test_invalid_exif_data() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 0 transferred, 2 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 0 transferred, 0 were already organized, 2 skipped (no EXIF), 0 failed"
     );
     assert!(fs::read_dir(temp_library.path()).unwrap().next().is_none());
 }
@@ -296,7 +329,7 @@ fn test_name_conflict() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 2 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1.jpg")).unwrap());
     assert!(fs::exists(temp_library.path().join("2025/06/15/photo1(1).jpg")).unwrap());
@@ -325,7 +358,7 @@ fn test_filename_conflict_on_rename() {
     assert!(result.is_ok());
     assert_eq!(
         result.unwrap(),
-        "Processed 2 files: 2 transferred, 0 skipped (no EXIF), 0 failed"
+        "Processed 2 files: 2 transferred, 0 were already organized, 0 skipped (no EXIF), 0 failed"
     );
     assert!(fs::exists(temp_library.path().join("2025/06/15/20250615_143000.jpg")).unwrap());
     assert!(

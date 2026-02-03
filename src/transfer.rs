@@ -6,36 +6,48 @@ use std::path::{Path, PathBuf};
 
 use crate::types::Action;
 
+enum TransferOutcome {
+    Transferred(PathBuf),
+    AlreadyInPlace(PathBuf),
+}
+use TransferOutcome::*;
+
 pub fn transfer_multiple(
     path_pairs: Vec<(PathBuf, PathBuf)>,
     dry_run: bool,
     action: Action,
     progress_bar: &Option<ProgressBar>,
-) -> (usize, usize) {
+) -> (usize, usize, usize) {
     info!("Will organize {} photos", path_pairs.len());
+
+    let mut transferred = 0;
+    let mut already_organized = 0;
+    let mut failed = 0;
 
     if dry_run {
         for (src, dst) in path_pairs.iter() {
-            debug!(
-                "[DRY RUN] Would organize file from {} to {}",
-                src.display(),
-                dst.display()
-            );
+            match (src.canonicalize(), dst.canonicalize()) {
+                (Ok(s), Ok(d)) if d == s => already_organized += 1,
+                _ => {
+                    debug!("Would transfer from {} to {}", src.display(), dst.display());
+                    transferred += 1;
+                }
+            }
         }
-        (path_pairs.len(), 0)
     } else {
-        let mut transferred = 0;
-        let mut failed = 0;
-
         for (src, dst) in path_pairs.iter() {
             match transfer_one(src, dst, action) {
-                Ok(pb) => {
+                Ok(Transferred(pb)) => {
                     debug!(
                         "Successfully organized file from {} to {}",
                         src.display(),
                         pb.display()
                     );
                     transferred += 1;
+                }
+                Ok(AlreadyInPlace(pb)) => {
+                    debug!("Already organized file {}", pb.display());
+                    already_organized += 1;
                 }
                 Err(err) => {
                     error!("Failed to organize file {}: {}", src.display(), err);
@@ -46,32 +58,36 @@ pub fn transfer_multiple(
                 pb.inc(1);
             }
         }
-
-        (transferred, failed)
     }
+    (transferred, already_organized, failed)
 }
 
 fn transfer_one(
     source: &PathBuf,
     destination: &PathBuf,
     action: Action,
-) -> Result<PathBuf, std::io::Error> {
-    let parent_dir = destination
-        .parent()
-        .expect("destination should have parent directory");
-    fs::create_dir_all(parent_dir)?;
+) -> Result<TransferOutcome, std::io::Error> {
+    match (source.canonicalize(), destination.canonicalize()) {
+        (Ok(s), Ok(d)) if d == s => Ok(AlreadyInPlace(destination.to_path_buf())),
+        _ => {
+            let parent_dir = destination
+                .parent()
+                .expect("destination should have parent directory");
+            fs::create_dir_all(parent_dir)?;
 
-    let final_destination = if fs::exists(destination)? {
-        next_available_name(destination, parent_dir, |p| fs::exists(p))?
-    } else {
-        destination.to_path_buf()
-    };
+            let final_destination = if fs::exists(destination)? {
+                next_available_name(destination, parent_dir, |p| fs::exists(p))?
+            } else {
+                destination.to_path_buf()
+            };
 
-    match action {
-        Action::Move => rename(source, final_destination),
-        Action::Copy => {
-            fs::copy(source, &final_destination)?;
-            Ok(final_destination)
+            match action {
+                Action::Move => Ok(Transferred(rename(source, final_destination)?)),
+                Action::Copy => {
+                    fs::copy(source, &final_destination)?;
+                    Ok(Transferred(final_destination))
+                }
+            }
         }
     }
 }
