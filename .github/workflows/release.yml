@@ -122,4 +122,4 @@ jobs:
             ${{ steps.archive.outputs.NAME }}.sha256
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: ${{ matrix.platform.os == 'ubuntu-latest' }}
