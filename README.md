@@ -19,6 +19,21 @@ Chronophoto helps you organize your photos by reading the creation timestamp fro
 
 ## Installation
 
+### Option 1: Download Pre-built Binary (Recommended)
+
+1. Go to the [Releases page](https://github.com/DmytroDordovskyi/chronophoto/releases)
+2. Download the appropriate file for your system:
+   - **macOS (Apple Silicon/M1/M2/M3)**: `chronophoto-v*-macos-aarch64.tar.gz`
+   - **macOS (Intel)**: `chronophoto-v*-macos-x86_64.tar.gz`
+   - **Windows**: `chronophoto-v*-windows-x86_64.zip`
+   - **Linux**: `chronophoto-v*-linux-x86_64.tar.gz`
+3. Extract the archive
+4. Move the `chronophoto` binary to a location in your PATH:
+   - **macOS/Linux**: `sudo mv chronophoto /usr/local/bin/`
+   - **Windows**: Place in `C:\Program Files\chronophoto\` and add to PATH
+
+### Option 2: Build from Source
+
 ```bash
 git clone https://github.com/DmytroDordovskyi/chronophoto.git
 cd chronophoto
