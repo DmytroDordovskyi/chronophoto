@@ -23,7 +23,7 @@ Chronophoto helps you organize your photos by reading the creation timestamp fro
 
 1. Go to the [Releases page](https://github.com/DmytroDordovskyi/chronophoto/releases)
 2. Download the appropriate file for your system:
-   - **macOS (Apple Silicon/M1/M2/M3)**: `chronophoto-v*-macos-aarch64.tar.gz`
+   - **macOS (Apple Silicon)**: `chronophoto-v*-macos-aarch64.tar.gz`
    - **macOS (Intel)**: `chronophoto-v*-macos-x86_64.tar.gz`
    - **Windows**: `chronophoto-v*-windows-x86_64.zip`
    - **Linux**: `chronophoto-v*-linux-x86_64.tar.gz`
@@ -183,7 +183,7 @@ Photos without EXIF timestamp data are:
 
 1. **Always start with `--dry-run`** to preview what will happen
 2. **Use `--action copy`** if you want to keep originals untouched
-3. **Enable `--verbose`** and `--log-file`** for troubleshooting
+3. **Enable `--verbose` and `--log-file`** for troubleshooting
 4. **Choose compact mode** for mixed-density photo collections
 5. **Use `--rename`** for consistent, sortable filenames
 
